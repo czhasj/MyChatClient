@@ -266,7 +266,7 @@ border: 1px solid #C9C9C9;
                     </size>
                    </property>
                    <property name="text">
-                    <string/>
+                    <string>milo</string>
                    </property>
                    <property name="placeholderText">
                     <string>用户名</string>
@@ -288,7 +288,7 @@ border: 1px solid #C9C9C9;
                     </size>
                    </property>
                    <property name="text">
-                    <string/>
+                    <string>milo</string>
                    </property>
                    <property name="echoMode">
                     <enum>QLineEdit::Password</enum>

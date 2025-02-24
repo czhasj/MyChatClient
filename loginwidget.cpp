@@ -3,6 +3,8 @@
 #include "mainwindow.h"
 #include <QFile>
 #include <QDebug>
+#include "unit.h"
+
 LoginWidget::LoginWidget(QWidget *parent)
     : CustomMoveWidget(parent)
     , ui(new Ui::LoginWidget)
@@ -12,12 +14,14 @@ LoginWidget::LoginWidget(QWidget *parent)
     this->setWindowFlags(Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
 
-    QFile file(":/resource/qss/default.css");
-    file.open(QIODevice::ReadOnly);
+    // QFile file(":/resource/qss/default.css");
+    // file.open(QIODevice::ReadOnly);
 
-    //设置样式表
-    qApp->setStyleSheet(file.readAll());
-    file.close();
+    // //设置样式表
+    // qApp->setStyleSheet(file.readAll());
+    // file.close();
+
+    myHelper::setStyle("default");
 
     ui->stackedWidget->setCurrentIndex(0);
 
@@ -61,14 +65,20 @@ void LoginWidget::on_btnLogin_clicked()
 
 
 
-    QString username = ui->lineEditUser->text();
-    QString passwd = ui->lineEditPasswd->text();
+    // QString username = ui->lineEditUser->text();
+    // QString passwd = ui->lineEditPasswd->text();
 
-    QJsonObject json;
-    json.insert("name",username);
-    json.insert("passwd",passwd);
+    // QJsonObject json;
+    // json.insert("name",username);
+    // json.insert("passwd",passwd);
 
-    m_tcpsocket->SltSendMessage(0x11,json);
+    // m_tcpsocket->SltSendMessage(0x11,json);
+    disconnect(m_tcpsocket,&ClientSocket::signalStatus,this,&LoginWidget::onSignalStatus);
+    disconnect(m_tcpsocket,&ClientSocket::signalMessage,this,&LoginWidget::onSignalMessage);
+    MainWindow *mainwindow = new MainWindow;
+    mainwindow->SetSocket(m_tcpsocket,ui->lineEditUser->text());
+    mainwindow->show();
+    this->hide();
 }
 
 void LoginWidget::onSignalMessage(const quint8 &type, const QJsonValue &dataVal)
@@ -79,7 +89,7 @@ void LoginWidget::onSignalMessage(const quint8 &type, const QJsonValue &dataVal)
 void LoginWidget::onSignalStatus(const quint8 &state)
 {
     switch (state) {
-    case 0x03://登录成功
+    case LoginSuccess://登录成功
     {
         qDebug()<<"登录成功";
         MainWindow *mainwindow = new MainWindow;
@@ -87,13 +97,13 @@ void LoginWidget::onSignalStatus(const quint8 &state)
         this->hide();
         break;
     }
-    case 0x01://登录成功
+    case ConnectedHost://登录成功
         ui->labelWinTitle->setText("已连接服务器");
         break;
-    case 0x04://用户未注册
+    case LoginPasswdError://用户未注册
         qDebug()<<"用户未注册";
         break;
-    case 0x13://用户已在线
+    case LoginRepeat://用户已在线
         qDebug()<<"用户已在线";
         break;
     default:

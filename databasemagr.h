@@ -5,7 +5,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QMutex>
-
+#include <QJsonArray>
 
 /// 客户端数据库管理类
 class DataBaseMagr : public QObject
@@ -34,6 +34,9 @@ public:
     }
 
 
+    bool isMyFriend(const int &userId, const QString &name);
+    QJsonArray GetMyFriend(const int &userId);
+    void AddFriend(const int &friendId, const int &userId, const QString &name);
 signals:
 
 public slots:

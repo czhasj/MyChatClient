@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <qjsonvalue.h>
+#include "global.h"
 namespace Ui {
 class LoginWidget;
 }
