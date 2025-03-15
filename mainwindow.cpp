@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_btnGroup->addButton(ui->btnGroup,1);
     m_btnGroup->addButton(ui->btnConversation,2);
     m_btnGroup->addButton(ui->btnApplay,3);
-    connect(m_btnGroup,&QButtonGroup::idClicked,this,&MainWindow::stlMainPageChanged);
+    // connect(m_btnGroup,&QButtonGroup::idClicked,this,&MainWindow::stlMainPageChanged);
     ui->GCStackedWidget->setCurrentIndex(0);
     InitQQListMenu();
     InitSysTrayIcon();

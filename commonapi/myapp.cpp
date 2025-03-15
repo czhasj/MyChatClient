@@ -31,7 +31,9 @@ int     MyApp::m_nFilePort          = 32102;
 int     MyApp::m_nGroupPort         = 32103;
 #else
 // 服务器相关配置
-QString MyApp::m_strHostAddr        = "192.168.112.1";
+// QString MyApp::m_strHostAddr        = "172.30.96.1";
+// QString MyApp::m_strHostAddr        = "192.168.112.1";
+QString MyApp::m_strHostAddr        = "127.0.0.1";
 int     MyApp::m_nMsgPort           = 60100;
 int     MyApp::m_nFilePort          = 60101;
 int     MyApp::m_nGroupPort         = 60102;
@@ -118,7 +120,9 @@ void MyApp::ReadSettingFile()
 
 
     settings.beginGroup("Server");
-    m_strHostAddr = settings.value("HostAddr", "192.168.112.1").toString();
+    // m_strHostAddr = settings.value("HostAddr", "172.30.96.1").toString();
+    // m_strHostAddr = settings.value("HostAddr", "192.168.112.1").toString();
+    m_strHostAddr = settings.value("HostAddr", "127.0.0.1").toString();
     m_nMsgPort    = settings.value("MsgPort", 60100)  .toInt();
     m_nFilePort   = settings.value("FilePort", 60101)  .toInt();
     m_nGroupPort  = settings.value("GroupPort", 60102)  .toInt();

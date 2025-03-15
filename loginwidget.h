@@ -27,14 +27,18 @@ private slots:
     void on_btnCancel_clicked();
 
     void on_btnLogin_clicked();
+    void SltAnimationFinished();
+    void SltTcpStatus(const quint8 &state);
 
     void onSignalMessage(const quint8 &type, const QJsonValue &dataVal);
     void onSignalStatus(const quint8 &state);
-
+// signals:
+//     void signalStatus(const quint8 &state);
 private:
     Ui::LoginWidget *ui;
-
-    ClientSocket *m_tcpsocket;
+    bool m_bConnected;
+    ClientSocket *m_tcpSocket;
+    void InitWidget();
 };
 
 #endif // LOGINWIDGET_H
