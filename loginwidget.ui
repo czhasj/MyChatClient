@@ -6,27 +6,43 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>388</width>
-    <height>307</height>
+    <width>410</width>
+    <height>391</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>登录界面</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resource.qrc">
+    <normaloff>:/resource/background/app.png</normaloff>:/resource/background/app.png</iconset>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget#page,QWidget#page_2 {
-border: 1px solid #A5A6A8;
-border-radius:4px;
+   <string notr="true">QWidget#page, QWidget#page_2 {
+	border: 1px solid #A5A6A8;
+	border-radius: 4px;
 }</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="AnimationStackedWidget" name="stackedWidget">
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
-     </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>20</number>
+   </property>
+   <property name="topMargin">
+    <number>50</number>
+   </property>
+   <property name="rightMargin">
+    <number>20</number>
+   </property>
+   <property name="bottomMargin">
+    <number>50</number>
+   </property>
+   <item>
+    <widget class="RotatingStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="page">
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -131,7 +147,7 @@ border-radius:4px;
             </property>
             <property name="icon">
              <iconset resource="resource.qrc">
-              <normaloff>:/resource/common/ic_min_white.png</normaloff>:/resource/common/ic_min_white.png</iconset>
+              <normaloff>:/resource/common/ic_min.png</normaloff>:/resource/common/ic_min.png</iconset>
             </property>
            </widget>
           </item>
@@ -144,9 +160,8 @@ border-radius:4px;
              <string/>
             </property>
             <property name="icon">
-             <iconset>
-              <normalon>:/resource/common/ic_close_white.png</normalon>
-             </iconset>
+             <iconset resource="resource.qrc">
+              <normaloff>:/resource/common/ic_close_white.png</normaloff>:/resource/common/ic_close_white.png</iconset>
             </property>
            </widget>
           </item>
@@ -222,7 +237,7 @@ border-radius:4px;
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QLabel#labelUserHead {
-border: 1px solid #C9C9C9;
+	border: 1px solid #C9C9C9;
 }</string>
                 </property>
                 <property name="text">
@@ -266,7 +281,7 @@ border: 1px solid #C9C9C9;
                     </size>
                    </property>
                    <property name="text">
-                    <string>milo</string>
+                    <string>xiaoni</string>
                    </property>
                    <property name="placeholderText">
                     <string>用户名</string>
@@ -288,7 +303,7 @@ border: 1px solid #C9C9C9;
                     </size>
                    </property>
                    <property name="text">
-                    <string>milo</string>
+                    <string>1234</string>
                    </property>
                    <property name="echoMode">
                     <enum>QLineEdit::Password</enum>
@@ -403,6 +418,9 @@ border: 1px solid #C9C9C9;
           </property>
           <item>
            <widget class="QLabel" name="labelWinTitle_2">
+            <property name="styleSheet">
+             <string notr="true">color: #FFFFFF;</string>
+            </property>
             <property name="text">
              <string>登录配置</string>
             </property>
@@ -417,9 +435,8 @@ border: 1px solid #C9C9C9;
              <string/>
             </property>
             <property name="icon">
-             <iconset>
-              <normalon>:/resource/common/ic_min.png</normalon>
-             </iconset>
+             <iconset resource="resource.qrc">
+              <normaloff>:/resource/common/ic_min.png</normaloff>:/resource/common/ic_min.png</iconset>
             </property>
            </widget>
           </item>
@@ -432,9 +449,8 @@ border: 1px solid #C9C9C9;
              <string/>
             </property>
             <property name="icon">
-             <iconset>
-              <normalon>:/resource/common/ic_close_white.png</normalon>
-             </iconset>
+             <iconset resource="resource.qrc">
+              <normaloff>:/resource/common/ic_close_white.png</normaloff>:/resource/common/ic_close_white.png</iconset>
             </property>
            </widget>
           </item>
@@ -464,6 +480,13 @@ border: 1px solid #C9C9C9;
                    </property>
                   </widget>
                  </item>
+                 <item row="0" column="1">
+                  <widget class="QIPLineEdit" name="lineEditHostAddr">
+                   <property name="text">
+                    <string>192.168.5.181</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="1" column="0">
                   <widget class="QLabel" name="label_4">
                    <property name="text">
@@ -474,7 +497,7 @@ border: 1px solid #C9C9C9;
                  <item row="1" column="1">
                   <widget class="QLineEdit" name="lineEditHostMsgPort">
                    <property name="text">
-                    <string>60100</string>
+                    <string>60001</string>
                    </property>
                   </widget>
                  </item>
@@ -488,14 +511,7 @@ border: 1px solid #C9C9C9;
                  <item row="2" column="1">
                   <widget class="QLineEdit" name="lineEditHostFilePort">
                    <property name="text">
-                    <string>60101</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="IPLIneEdit" name="lineEditHostAddr">
-                   <property name="text">
-                    <string/>
+                    <string>60002</string>
                    </property>
                   </widget>
                  </item>
@@ -561,24 +577,89 @@ border: 1px solid #C9C9C9;
  </widget>
  <customwidgets>
   <customwidget>
-   <class>AnimationStackedWidget</class>
-   <extends>QStackedWidget</extends>
-   <header location="global">animationstackedwidget.h</header>
-   <container>1</container>
+   <class>QIPLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>clineedit.h</header>
   </customwidget>
   <customwidget>
-   <class>IPLIneEdit</class>
-   <extends>QLineEdit</extends>
-   <header location="global">iplineedit.h</header>
+   <class>RotatingStackedWidget</class>
+   <extends>QStackedWidget</extends>
+   <header>rotatingstackedwidget.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>QIconLineEdit</class>
    <extends>QLineEdit</extends>
-   <header location="global">clineedit.h</header>
+   <header>clineedit.h</header>
   </customwidget>
  </customwidgets>
  <resources>
   <include location="resource.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>btnWinMin_2</sender>
+   <signal>clicked()</signal>
+   <receiver>LoginWidget</receiver>
+   <slot>showMinimized()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>87</x>
+     <y>71</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>447</x>
+     <y>67</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnWinClose_2</sender>
+   <signal>clicked()</signal>
+   <receiver>LoginWidget</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>118</x>
+     <y>76</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>431</x>
+     <y>167</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnWinMin</sender>
+   <signal>clicked()</signal>
+   <receiver>LoginWidget</receiver>
+   <slot>showMinimized()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>358</x>
+     <y>68</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>489</x>
+     <y>157</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnWinClose</sender>
+   <signal>clicked()</signal>
+   <receiver>LoginWidget</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>388</x>
+     <y>72</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>195</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

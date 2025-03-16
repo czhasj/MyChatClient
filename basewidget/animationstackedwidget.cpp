@@ -1,121 +1,199 @@
 #include "animationstackedwidget.h"
-#include <QPropertyAnimation>
-#include <QPainter>
+
+#include <QPixmap>
 #include <QTransform>
+
 AnimationStackedWidget::AnimationStackedWidget(QWidget *parent)
-    :QStackedWidget(parent)
+    : QStackedWidget(parent)
 {
-    m_nextPageIndex = 0;
-}
-AnimationStackedWidget::~AnimationStackedWidget(){
+    m_isAnimating = false;
+    m_currentValue = 0;
+    m_currentIndex = 0;
+    m_previousIndex = 0;
 
-}
+    m_animation = new QPropertyAnimation(this, QByteArray());
+    m_animation->setDuration(300);
+    m_animation->setEasingCurve(QEasingCurve::Linear);
+    m_animation->setStartValue(0);
+    m_animation->setEndValue(0);
 
-void AnimationStackedWidget::animation(int pageIndex)
-{
-    m_nextPageIndex = pageIndex;
-
-    int offsetX = frameRect().width();
-    int offsetY = frameRect().height();
-    widget(pageIndex)->setGeometry(0,0,offsetX,offsetY);
-
-    QPropertyAnimation *animation = new QPropertyAnimation(this,"iRotateVal");
-    animation->setDuration(700);
-    animation->setEasingCurve(QEasingCurve::Linear);
-    animation->setStartValue(m_startVal);
-    animation->setEndValue(m_endVal);
-
-    connect(animation,&QPropertyAnimation::valueChanged,this,&AnimationStackedWidget::onValueChange);
-    connect(animation,&QPropertyAnimation::finished,this,&AnimationStackedWidget::onFinished);
-
-    currentWidget()->hide();
-
-    animation->start();
+    connect(m_animation, SIGNAL(valueChanged(QVariant)), SLOT(valueChanged(QVariant)));
+    connect(m_animation, SIGNAL(finished()), SLOT(animationFinished()));
 }
 
-
-
-float AnimationStackedWidget::rotateVal()
+AnimationStackedWidget::~AnimationStackedWidget()
 {
-    return iRotateVal;
+    delete m_animation;
 }
 
-void AnimationStackedWidget::setRotateVal(float val)
+QString AnimationStackedWidget::getClassName()
 {
-    iRotateVal = val;
+    return staticMetaObject.className();
 }
 
-int AnimationStackedWidget::startVal()
+void AnimationStackedWidget::paintEvent(QPaintEvent * event)
 {
-    return m_startVal;
-}
-
-void AnimationStackedWidget::setStartVal(int val)
-{
-    m_startVal = val;
-}
-
-int AnimationStackedWidget::endVal()
-{
-    return m_endVal;
-}
-
-void AnimationStackedWidget::setEndVal(int val)
-{
-    m_endVal = val;
-}
-
-void AnimationStackedWidget::onValueChange()
-{
-    repaint();
-}
-
-void AnimationStackedWidget::onFinished()
-{
-    widget(m_nextPageIndex)->show();
-    widget(m_nextPageIndex)->raise();
-
-    setCurrentWidget(widget(m_nextPageIndex));
-    repaint();
-}
-
-void AnimationStackedWidget::paintEvent(QPaintEvent *event)
-{
-    QPainter p(this);
-        //旋转
-    if(iRotateVal > 0 && iRotateVal <= 90){
-        QPixmap pix(currentWidget()->size());
-        currentWidget()->render(&pix);
-        QTransform transfrom;
-        transfrom.translate(width()/2,0);
-        transfrom.rotate(iRotateVal,Qt::YAxis);
-        p.setTransform(transfrom);
-        p.drawPixmap(-1*width()/2,0,pix);
-    }else if(iRotateVal > 90 && iRotateVal <= 180){
-        QPixmap pix(widget(m_nextPageIndex)->size());
-        widget(m_nextPageIndex)->render(&pix);
-        QTransform transfrom;
-        transfrom.translate(width()/2,0);
-        transfrom.rotate(iRotateVal+180,Qt::YAxis);
-        p.setTransform(transfrom);
-        p.drawPixmap(-1*width()/2,0,pix);
-    }else if(iRotateVal > -90 && iRotateVal <= 0){
-        QPixmap pix(currentWidget()->size());
-        currentWidget()->render(&pix);
-        QTransform transfrom;
-        transfrom.translate(width()/2,0);
-        transfrom.rotate(iRotateVal,Qt::YAxis);
-        p.setTransform(transfrom);
-        p.drawPixmap(-1*width()/2,0,pix);
-    }else if(iRotateVal >= -180 && iRotateVal <= -90){
-        QPixmap pix(widget(m_nextPageIndex)->size());
-        widget(m_nextPageIndex)->render(&pix);
-        QTransform transfrom;
-        transfrom.translate(width()/2,0);
-        transfrom.rotate(iRotateVal-180,Qt::YAxis);
-        p.setTransform(transfrom);
-        p.drawPixmap(-1*width()/2,0,pix);
-    }else{
+    if(m_isAnimating)
+    {
+        QPainter painter(this);
+        QTransform transform;
+        renderCurrentWidget(painter, transform);
+        renderPreviousWidget(painter, transform);
+    }
+    else
+    {
         QWidget::paintEvent(event);
     }
+}
+
+void AnimationStackedWidget::renderPreviousWidget(QPainter &painter, QTransform &transform)
+{
+    QWidget *w = widget(m_previousIndex);
+    QPixmap pixmap( w->size() );
+    pixmap.fill(Qt::transparent);
+    w->setAttribute(Qt::WA_TranslucentBackground, true);
+    w->render(&pixmap);
+    w->setAttribute(Qt::WA_TranslucentBackground, false);
+
+    Q_UNUSED(transform);
+    switch(m_type)
+    {
+    case BottomToTop :
+    {
+        painter.drawPixmap(0, height()/2, pixmap);
+        break;
+    }
+    case TopToBottom :
+    {
+        painter.drawPixmap(0, -height()/2, pixmap);
+        break;
+    }
+    case LeftToRight :
+    {
+        painter.drawPixmap(width()/2, 0, pixmap);
+        break;
+    }
+    case RightToLeft :
+    {
+        painter.drawPixmap(-width()/2, 0, pixmap);
+        break;
+    }
+    default: break;
+    }
+}
+
+void AnimationStackedWidget::renderCurrentWidget(QPainter &painter, QTransform &transform)
+{
+    QWidget *w = widget(m_currentIndex);
+    QPixmap pixmap( w->size() );
+    pixmap.fill(Qt::transparent);
+    w->setAttribute(Qt::WA_TranslucentBackground, true);
+    w->render(&pixmap);
+    w->setAttribute(Qt::WA_TranslucentBackground, false);
+
+    switch(m_type)
+    {
+    case BottomToTop :
+    {
+        transform.translate(0, m_currentValue);
+        painter.setTransform(transform);
+        painter.drawPixmap(0, -height()/2, pixmap);
+        break;
+    }
+    case TopToBottom :
+    {
+        transform.translate(0, m_currentValue);
+        painter.setTransform(transform);
+        painter.drawPixmap(0, height()/2, pixmap);
+        break;
+    }
+    case LeftToRight :
+    {
+        transform.translate(m_currentValue, 0);
+        painter.setTransform(transform);
+        painter.drawPixmap(-width()/2, 0, pixmap);
+        break;
+    }
+    case RightToLeft :
+    {
+        transform.translate(m_currentValue, 0);
+        painter.setTransform(transform);
+        painter.drawPixmap(width()/2, 0, pixmap);
+        break;
+    }
+    default: break;
+    }
+}
+
+void AnimationStackedWidget::start(int index)
+{
+    if(m_isAnimating)
+    {
+        return;
+    }
+    m_previousIndex = m_currentIndex;
+    m_currentIndex = index;
+
+    int offsetx = frameRect().width();
+    int offsety = frameRect().height();
+    widget(m_currentIndex)->setGeometry(0, 0, offsetx, offsety);
+
+    currentWidget()->hide();
+    m_isAnimating = true;
+    m_animation->start();
+}
+
+void AnimationStackedWidget::setIndex(int previous, int current)
+{
+    m_currentIndex = current;
+    m_previousIndex = previous;
+}
+
+void AnimationStackedWidget::setLength(int length, AnimationType type)
+{
+    switch(m_type = type)
+    {
+    case BottomToTop :
+    case LeftToRight :
+    {
+        m_animation->setStartValue(-length/2);
+        m_animation->setEndValue(length/2);
+        break;
+    }
+    case TopToBottom :
+    case RightToLeft :
+    {
+        m_animation->setStartValue(length/2);
+        m_animation->setEndValue(-length/2);
+        break;
+    }
+    default: break;
+    }
+}
+
+void AnimationStackedWidget::setDuration(int duration)
+{
+    m_animation->setDuration(duration);
+}
+
+int AnimationStackedWidget::getDuration() const
+{
+    return m_animation->duration();
+}
+
+void AnimationStackedWidget::valueChanged(const QVariant &value)
+{
+    m_currentValue = value.toFloat();
+    update();
+}
+
+void AnimationStackedWidget::animationFinished()
+{
+    m_currentValue = 0;
+    m_isAnimating = false;
+    QWidget *w = widget(m_currentIndex);
+    w->show();
+    w->raise();
+    setCurrentWidget( w );
+    update();
 }

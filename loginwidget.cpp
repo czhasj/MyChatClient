@@ -14,32 +14,89 @@
 #include <QCompleter>
 #include <QStringListModel>
 
-LoginWidget::LoginWidget(QWidget *parent)
-    : CustomMoveWidget(parent)
-    , ui(new Ui::LoginWidget)
+LoginWidget::LoginWidget(QWidget *parent) :
+    CustomMoveWidget(parent),
+    ui(new Ui::LoginWidget)
 {
     ui->setupUi(this);
-
-    this->setWindowFlags(Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
+    this->setWindowFlags(Qt::FramelessWindowHint);
+
     m_bConnected = false;
+
     InitWidget();
+
+    // socket通信
     m_tcpSocket = new ClientSocket();
     ui->labelWinTitle->setText(tr("正在连接服务器..."));
-
-    // connect(m_tcpSocket,&ClientSocket::signalStatus,this,&LoginWidget::onSignalStatus);
-    // connect(m_tcpSocket,&ClientSocket::signalMessage,this,&LoginWidget::onSignalMessage);
+    MyApp::m_strHostAddr = "127.0.0.1";
     qDebug() << "MyApp::m_strHostAddr before connect:" << MyApp::m_strHostAddr;
     qDebug() << "MyApp::m_nMsgPort before connect:" << MyApp::m_nMsgPort;
     m_tcpSocket->ConnectToHost(MyApp::m_strHostAddr, MyApp::m_nMsgPort);
-    // m_tcpSocket->CheckConnected();
-     connect(m_tcpSocket, SIGNAL(signalStatus(quint8)), this, SLOT(SltTcpStatus(quint8)));
+
+    connect(m_tcpSocket, SIGNAL(signalStatus(quint8)), this, SLOT(SltTcpStatus(quint8)));
 }
 
 LoginWidget::~LoginWidget()
 {
     delete ui;
 }
+
+void LoginWidget::changeEvent(QEvent *e)
+{
+    QWidget::changeEvent(e);
+    switch (e->type()) {
+    case QEvent::LanguageChange:
+        ui->retranslateUi(this);
+        break;
+    default:
+        break;
+    }
+}
+
+/**
+ * @brief LoginWidget::on_btnLogin_clicked
+ * 用户登陆
+ */
+void LoginWidget::on_btnLogin_clicked()
+{
+    ui->widgetInput->setVisible(false);
+
+    QPropertyAnimation *animation = new QPropertyAnimation(ui->labelUserHead, "pos");
+    animation->setDuration(200);
+    animation->setStartValue(QPoint(40, 115));
+    animation->setEndValue(QPoint((this->width() - ui->labelUserHead->width()) / 2 - 20, 100));
+    connect(animation, SIGNAL(finished()), this, SLOT(SltAnimationFinished()));
+
+    animation->start();
+}
+
+///**
+// * @brief LoginWidget::on_btnRegedit_clicked
+// * 用户注册
+// */
+//void LoginWidget::on_btnRegedit_clicked()
+//{
+//    // 如果没有链接上服务器，此时进行一次链接
+//    if (!m_bConnected) {
+//        m_tcpSocket->ConnectToHost(MyApp::m_strHostAddr, MyApp::m_nMsgPort);
+//        CMessageBox::Infomation(this, "未连接服务器，请等待！");
+//        return;
+//    }
+
+//    // 构建 Json 对象
+//    QJsonObject json;
+//    json.insert("name", ui->lineEditUser->text());
+//    json.insert("passwd", ui->lineEditPasswd->text());
+
+//    m_tcpSocket->SltSendMessage(Register, json);
+//}
+
+/**
+ * @brief LoginWidget::SltTcpStatus
+ * 读取服务器返回的登陆信息状态
+ * @param state
+ */
 void LoginWidget::SltTcpStatus(const quint8 &state)
 {
     switch (state) {
@@ -47,13 +104,13 @@ void LoginWidget::SltTcpStatus(const quint8 &state)
         m_bConnected = false;
         ui->labelWinTitle->setText(tr("服务器已断开"));
     }
-    break;
+        break;
     case ConnectedHost:
     {
         m_bConnected = true;
         ui->labelWinTitle->setText(tr("已连接服务器"));
     }
-    break;
+        break;
         // 登陆验证成功
     case LoginSuccess:
     {
@@ -82,28 +139,28 @@ void LoginWidget::SltTcpStatus(const quint8 &state)
         mainWindow->show();
         this->close();
     }
-    break;
+        break;
     case LoginPasswdError:
     {
         CMessageBox::Infomation(this, "登录失败，请检查用户名和密码！");
     }
-    break;
+        break;
     case LoginRepeat:
     {
         CMessageBox::Infomation(this, "登录失败，该账户已登录！");
     }
-    break;
+        break;
 
     case RegisterOk:
     {
         CMessageBox::Infomation(this, "该账号注册成功！请点击登录！");
     }
-    break;
+        break;
     case RegisterFailed:
     {
         CMessageBox::Infomation(this, "该账号已经注册！请点击登录！");
     }
-    break;
+        break;
     default:
         break;
     }
@@ -112,6 +169,108 @@ void LoginWidget::SltTcpStatus(const quint8 &state)
     ui->widgetInput->setVisible(true);
     ui->labelUserHead->move(40, 115);
 }
+
+/**
+ * @brief LoginWidget::on_btnCancel_clicked
+ * 取消配置
+ */
+void LoginWidget::on_btnCancel_clicked()
+{
+    ui->stackedWidget->nextPage();
+}
+
+/**
+ * @brief LoginWidget::on_btnSaveCfg_clicked
+ * 保存配置
+ */
+void LoginWidget::on_btnSaveCfg_clicked()
+{
+    QString strHost = ui->lineEditHostAddr->text();
+
+    // 判断是否ip地址
+    if (!myHelper::IsIP(strHost))
+    {
+        CMessageBox::Infomation(this, tr("IP地址设置有误!"));
+        return;
+    }
+
+    int nMsgPort = ui->lineEditHostMsgPort->text().toInt();
+    if (nMsgPort > 65535 || nMsgPort < 100) {
+        CMessageBox::Infomation(this, tr("端口设置有误!"));
+        return;
+    }
+
+    int nFilePort = ui->lineEditHostFilePort->text().toInt();
+    if (nFilePort > 65535 || nFilePort < 100) {
+        CMessageBox::Infomation(this, tr("端口设置有误!"));
+        return;
+    }
+
+    if (nMsgPort == nFilePort) {
+        CMessageBox::Infomation(this, tr("2个端口不能设置一样!"));
+        return;
+    }
+
+    MyApp::m_strHostAddr = strHost;
+    MyApp::m_nMsgPort    = nMsgPort;
+    MyApp::m_nFilePort   = nFilePort;
+
+    // 保存配置
+    MyApp::SaveConfig();
+
+    // 如果没连接服务器，则尝试新的配置连接
+    if (!m_bConnected) {
+        m_tcpSocket->ConnectToHost(MyApp::m_strHostAddr, MyApp::m_nMsgPort);
+    }
+
+    // 返回登录界面
+    ui->stackedWidget->nextPage();
+}
+
+// 切换配置
+void LoginWidget::on_btnWinMenu_clicked()
+{
+    ui->stackedWidget->nextPage();
+}
+
+void LoginWidget::SltAnimationFinished()
+{
+    if (!m_bConnected) {
+        m_tcpSocket->ConnectToHost(MyApp::m_strHostAddr, MyApp::m_nMsgPort);
+        CMessageBox::Infomation(this, "未连接服务器，请等待！");
+        ui->widgetInput->setVisible(true);
+        ui->labelUserHead->move(40, 115);
+        return;
+    }
+
+    // 构建 Json 对象
+    QJsonObject json;
+    json.insert("name", ui->lineEditUser->text());
+    json.insert("passwd", ui->lineEditPasswd->text());
+
+    m_tcpSocket->SltSendMessage(Login, json);
+}
+
+/**
+ * @brief LoginWidget::SltEditFinished
+ * 编辑完成
+ */
+void LoginWidget::SltEditFinished()
+{
+    QString text = ui->lineEditUser->text();
+    if (QString::compare(text, QString("")) != 0) {
+//        bool flag = valueList.contains(text, Qt::CaseInsensitive);
+//        if (!flag) {
+////            ui->lineEditUser->setText(text);
+//        }
+        qDebug() << "text edit finished" << text;
+    }
+}
+
+/**
+ * @brief LoginWidget::InitWidget
+ * 界面初始化
+ */
 void LoginWidget::InitWidget()
 {
     // 加载配置信息
@@ -143,76 +302,21 @@ void LoginWidget::InitWidget()
     // 默认显示第一界面
     ui->stackedWidget->setCurrentIndex(0);
 }
-void LoginWidget::on_btnWinMenu_clicked()
+
+void LoginWidget::paintEvent(QPaintEvent *)
 {
-    ui->stackedWidget->setStartVal(0);
-    ui->stackedWidget->setEndVal(180);
-    ui->stackedWidget->animation(1);
+    QPainter painter;
+    painter.fillRect(this->rect(), Qt::transparent);
 }
 
-void LoginWidget::on_btnCancel_clicked()
+// 记住密码
+void LoginWidget::on_checkBoxPasswd_clicked(bool checked)
 {
-    ui->stackedWidget->setStartVal(0);
-    ui->stackedWidget->setEndVal(-180);
-    ui->stackedWidget->animation(0);
+    if (!checked) ui->checkBoxAutoLogin->setChecked(false);
 }
 
-
-void LoginWidget::on_btnLogin_clicked()
+// 自动登陆
+void LoginWidget::on_checkBoxAutoLogin_clicked(bool checked)
 {
-    ui->widgetInput->setVisible(false);
-
-    QPropertyAnimation *animation = new QPropertyAnimation(ui->labelUserHead, "pos");
-    animation->setDuration(200);
-    animation->setStartValue(QPoint(40, 115));
-    animation->setEndValue(QPoint((this->width() - ui->labelUserHead->width()) / 2 - 20, 100));
-    connect(animation, SIGNAL(finished()), this, SLOT(SltAnimationFinished()));
-
-    animation->start();
-}
-void LoginWidget::SltAnimationFinished()
-{
-    if (!m_bConnected) {
-        m_tcpSocket->ConnectToHost(MyApp::m_strHostAddr, MyApp::m_nMsgPort);
-        CMessageBox::Infomation(this, "未连接服务器，请等待！");
-        ui->widgetInput->setVisible(true);
-        ui->labelUserHead->move(40, 115);
-        return;
-    }
-
-    // 构建 Json 对象
-    QJsonObject json;
-    json.insert("name", ui->lineEditUser->text());
-    json.insert("passwd", ui->lineEditPasswd->text());
-
-    m_tcpSocket->SltSendMessage(Login, json);
-}
-void LoginWidget::onSignalMessage(const quint8 &type, const QJsonValue &dataVal)
-{
-
-}
-
-void LoginWidget::onSignalStatus(const quint8 &state)
-{
-    switch (state) {
-    case LoginSuccess://登录成功
-    {
-        qDebug()<<"登录成功";
-        MainWindow *mainwindow = new MainWindow;
-        mainwindow->show();
-        this->hide();
-        break;
-    }
-    case ConnectedHost://登录成功
-        ui->labelWinTitle->setText("已连接服务器");
-        break;
-    case LoginPasswdError://用户未注册
-        qDebug()<<"用户未注册";
-        break;
-    case LoginRepeat://用户已在线
-        qDebug()<<"用户已在线";
-        break;
-    default:
-        break;
-    }
+    if (checked) ui->checkBoxPasswd->setChecked(true);
 }

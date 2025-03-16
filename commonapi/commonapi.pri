@@ -6,10 +6,12 @@ HEADERS += \
     $$PWD/global.h \
     $$PWD/myapp.h \
     $$PWD/qqcell.h \
+    $$PWD/iteminfo.h \
     $$PWD/unit.h
 
 
 SOURCES += \
     $$PWD/myapp.cpp \
+    $$PWD/iteminfo.cpp \
     $$PWD/qqcell.cpp
 
