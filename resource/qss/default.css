@@ -4,11 +4,11 @@
 QWidget#MainWindow,QWidget#SystemSetting,QWidget#PictureCutDialog,CBaseDialog {
     border: 1px solid #A5A6A8;
     border-radius: 2px;
-    background-color: #31A66B;
+    background-color: #0860db;
 }
 
 QWidget#widgetWinTitle, QWidget#widgetWinTitle_2 {
-    background-color: #31A66B;
+    background-color: #0860db;
 }
 
 QWidget#LoginWidget {
@@ -16,7 +16,7 @@ QWidget#LoginWidget {
 }
 
 QToolTip {
-    border: 1px solid #31A66B;
+    border: 1px solid #0860db;
     border-radius: 2px;
     background-color: #F1F2F3;
     font: 14px;
@@ -74,7 +74,7 @@ QLabel#labelUserMask {
 
 QWidget#widgetBottom {
     /*background-image: url(:/resource/background/background.png);*/
-    background-color: #31A66B;
+    background-color: #0860db;
 }
 
 QWidget#widgetButtons {
@@ -124,7 +124,7 @@ QWidget#frindListWidget {
 QWidget#ChatWindow {
     border: 1px solid #333333;
     border-radius: 2px;
-    background-color: #31A668;
+    background-color: #1460c4;
 }
 
 QWidget#widgetSetting {
@@ -156,7 +156,7 @@ QWidget#widgetSetting QToolButton:hover {
 QPushButton#btnClose,QPushButton#btnAction, QPushButton#btnSendMsg {
     border: none;
     border-radius: 5px;
-    background-color: #31A668;
+    background-color: #1460c4;
     color: #FFFFFF;
     min-width: 80px;
     min-height: 25px;
@@ -320,7 +320,7 @@ QMenu::separator{
 QWidget#widgetBody QPushButton {
     border: none;
     border-radius: 5px;
-    background-color: #31A668;
+    background-color: #1460c4;
     color: #FFFFFF;
     font: 12px;
     min-width: 80px;
@@ -334,7 +334,7 @@ QWidget#widgetBody QPushButton:hover {
 QWidget#widgetBody_2 QPushButton {
     border: none;
     border-radius: 5px;
-    background-color: #31A668;
+    background-color: #1460c4;
     color: #FFFFFF;
     font: 12px;
     min-width: 80px;

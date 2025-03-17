@@ -47,7 +47,13 @@ CustomMoveWidget::CustomMoveWidget(QWidget *parent) :
     this->setWindowFlags(Qt::FramelessWindowHint);
 #endif
 }
+void CustomMoveWidget::resizeEvent(QResizeEvent *event)
+{
+}
 
+void CustomMoveWidget::showEvent(QShowEvent *event)
+{
+}
 CustomMoveWidget::~CustomMoveWidget()
 {
 

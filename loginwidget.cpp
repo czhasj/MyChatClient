@@ -19,11 +19,36 @@ LoginWidget::LoginWidget(QWidget *parent) :
     ui(new Ui::LoginWidget)
 {
     ui->setupUi(this);
+    // 1. 创建 contentWidget 并转移 UI
+    contentWidget = ui->widget;
+    ui->widget->setAttribute(Qt::WA_TranslucentBackground);
+    ui->widget->setWindowFlags(Qt::FramelessWindowHint);
+    // ui->setupUi(contentWidget); // 将 UI 加载到 contentWidget
+    contentWidget->setParent(nullptr);
+
+    // 2. 初始化场景和视图
+    scene = new QGraphicsScene(this);
+    view = new QGraphicsView(scene);
+    proxy = scene->addWidget(contentWidget); // 将 contentWidget 添加到场景
+    proxy->setAcceptHoverEvents(true);
+    proxy->setAcceptedMouseButtons(Qt::AllButtons);
+    // 3. 设置 view 为 LoginWidget 的主部件
+    view->setParent(this);
+    view->setGeometry(0, 0, width(), height());
+    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view->setStyleSheet("background: transparent;");
+    view->setFrameShape(QFrame::NoFrame);
+    view->setRenderHint(QPainter::Antialiasing, true);
+    view->setRenderHint(QPainter::SmoothPixmapTransform, true);
+    // 4. 记录初始尺寸
+    originalSize = contentWidget->size();
+    this->resize(contentWidget->width() * 2, contentWidget->height() * 2);
     this->setAttribute(Qt::WA_TranslucentBackground);
     this->setWindowFlags(Qt::FramelessWindowHint);
-
+    // ui->labelUserHead
     m_bConnected = false;
-
+    // ui->labelUserHead->move(QPoint(80, 230));
     InitWidget();
 
     // socket通信
@@ -41,7 +66,35 @@ LoginWidget::~LoginWidget()
 {
     delete ui;
 }
+void LoginWidget::showEvent(QShowEvent *event)
+{
+    CustomMoveWidget::showEvent(event);
+    originalSize = contentWidget->size();
+    scene->update(); // 更新场景布局
+}
+void LoginWidget::resizeEvent(QResizeEvent *event) {
+    CustomMoveWidget::resizeEvent(event);
 
+    view->setGeometry(0, 0, width(), height());
+
+    qreal scale = 2.0;  // 固定缩放比例
+    if (proxy) {
+        proxy->setScale(scale);
+        // 计算contentWidget在场景中的偏移
+        qreal proxyX = width() / 2 - (originalSize.width() * scale) / 2;
+        qreal proxyY = height() / 2 - (originalSize.height() * scale) / 2;
+        proxy->setPos(proxyX, proxyY);
+
+        // 调整labelUserHead的位置（相对于contentWidget的原始坐标）
+        QPoint targetPos(80, 230); // contentWidget内的原始坐标
+        // 转换为场景坐标，再映射到主窗口
+        QPointF scenePos = proxy->mapToScene(targetPos);
+        QPoint viewPos = view->mapFromScene(scenePos);
+        QPoint globalPos = view->mapToGlobal(viewPos);
+        QPoint localPos = this->mapFromGlobal(globalPos);
+        ui->labelUserHead->move(localPos);
+    }
+}
 void LoginWidget::changeEvent(QEvent *e)
 {
     QWidget::changeEvent(e);
@@ -64,8 +117,8 @@ void LoginWidget::on_btnLogin_clicked()
 
     QPropertyAnimation *animation = new QPropertyAnimation(ui->labelUserHead, "pos");
     animation->setDuration(200);
-    animation->setStartValue(QPoint(40, 115));
-    animation->setEndValue(QPoint((this->width() - ui->labelUserHead->width()) / 2 - 20, 100));
+    animation->setStartValue(QPoint(80, 230));
+    animation->setEndValue(QPoint(((this->width() - ui->labelUserHead->width()) / 2 - 40)/2, 200));
     connect(animation, SIGNAL(finished()), this, SLOT(SltAnimationFinished()));
 
     animation->start();
@@ -276,7 +329,7 @@ void LoginWidget::InitWidget()
     // 加载配置信息
     ui->lineEditUser->SetIcon(QPixmap(":/resource/common/ic_user.png"));
     ui->lineEditUser->setText(MyApp::m_strUserName);
-
+    ui->labelUserHead->move(80, 230); // 初始位置设为原始坐标
     ui->lineEditPasswd->SetIcon(QPixmap(":/resource/common/ic_lock.png"));    // 加载之前的配置
 
     ui->lineEditHostAddr->setText(MyApp::m_strHostAddr);

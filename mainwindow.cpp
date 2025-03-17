@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "qgraphicsproxywidget.h"
 #include "ui_mainwindow.h"
 
 #include "unit.h"
@@ -24,6 +25,7 @@
 #include <QJsonObject>
 #include <QJsonParseError>
 #include <QJsonDocument>
+#include <QGraphicsView>
 
 #include <QCloseEvent>
 #include "animationstackedwidget.h"
@@ -32,6 +34,34 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    // 1. 创建 contentWidget 并转移 UI
+    contentWidget = ui->widget_2;
+    ui->widget->setAttribute(Qt::WA_TranslucentBackground);
+    ui->widget->setWindowFlags(Qt::FramelessWindowHint);
+    // ui->setupUi(contentWidget); // 将 UI 加载到 contentWidget
+    contentWidget->setParent(nullptr);
+
+    // 2. 初始化场景和视图
+    scene = new QGraphicsScene(this);
+    view = new QGraphicsView(scene);
+    proxy = scene->addWidget(contentWidget); // 将 contentWidget 添加到场景
+    proxy->setAcceptHoverEvents(true);
+    proxy->setAcceptedMouseButtons(Qt::AllButtons);
+    // 3. 设置 view 为 LoginWidget 的主部件
+    view->setParent(this);
+    view->setGeometry(0, 0, width(), height());
+    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view->setStyleSheet("background: transparent;");
+    view->setFrameShape(QFrame::NoFrame);
+    view->setRenderHint(QPainter::Antialiasing, true);
+    view->setRenderHint(QPainter::SmoothPixmapTransform, true);
+    // 4. 记录初始尺寸
+    originalSize = contentWidget->size();
+    this->resize(contentWidget->width() * 2, contentWidget->height() * 2);
+    this->setAttribute(Qt::WA_TranslucentBackground);
+    this->setWindowFlags(Qt::FramelessWindowHint);
+    // resize(this->width()*2,this->height()*2);
     this->setWindowFlags(Qt::FramelessWindowHint);
 
     m_bQuit = false;
@@ -57,7 +87,17 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->widgetHead, SIGNAL(signalCutHeadOk()), this, SLOT(SltHeadPicCutOk()));
     connect(ui->widgetHead, SIGNAL(signalUpdateUserHead(int,QString)), this, SLOT(SltUpdateUserHead(int,QString)));
 }
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    CustomMoveWidget::resizeEvent(event);
 
+    view->setGeometry(0, 0, width(), height());
+
+    qreal scale = 2.0;  // 固定缩放比例
+    if (proxy) {
+        proxy->setScale(scale);
+    }
+}
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -156,6 +196,9 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 void MainWindow::showEvent(QShowEvent *event)
 {
+    CustomMoveWidget::showEvent(event);
+    originalSize = contentWidget->size();
+    scene->update(); // 更新场景布局
     MyApp::m_nWinX = this->pos().x();
     MyApp::m_nWinY = this->pos().y();
     QWidget::showEvent(event);
@@ -377,8 +420,8 @@ void MainWindow::SltMainPageChanged(int index)
 
     ui->GCStackedWidget->setLength(ui->GCStackedWidget->width(),
                                    (index > s_nIndex)
-                                   ? AnimationStackedWidget::LeftToRight
-                                   : AnimationStackedWidget::RightToLeft);
+                                       ? AnimationStackedWidget::LeftToRight
+                                       : AnimationStackedWidget::RightToLeft);
 
     ui->GCStackedWidget->start(index);
     s_nIndex = index;
@@ -606,7 +649,7 @@ void MainWindow::SltTcpStatus(const quint8 &state)
         if (!this->isVisible()) this->show();
         CMessageBox::Infomation(this, tr("与服务器断开连接"));
     }
-        break;
+    break;
     case ConnectedHost:
     {
         QJsonObject json;
@@ -615,7 +658,7 @@ void MainWindow::SltTcpStatus(const quint8 &state)
 
         m_tcpSocket->SltSendMessage(Login, json);
     }
-        break;
+    break;
     case LoginSuccess:
     {
         systemTrayIcon->setIcon(QIcon(":/resource/background/app.png"));
@@ -623,7 +666,7 @@ void MainWindow::SltTcpStatus(const quint8 &state)
         if (!this->isVisible()) this->show();
         CMessageBox::Infomation(this, tr("重连成功！"));
     }
-        break;
+    break;
     default:
         break;
     }
@@ -641,85 +684,85 @@ void MainWindow::SltTcpReply(const quint8 &type, const QJsonValue &dataVal)
     {
         UpdateFriendStatus(OnLine, dataVal);
     }
-        break;
+    break;
     case UserOffLine:
     {
         UpdateFriendStatus(OffLine, dataVal);
     }
-        break;
+    break;
     case UpdateHeadPic:
     {
         // 你的好友更新了头像
         ParseUpFriendHead(dataVal);
     }
-        break;
+    break;
     case AddFriend:
     {
         ParseAddFriendReply(dataVal);
     }
-        break;
+    break;
     case AddGroup:
     {
         ParseAddGroupReply(dataVal);
     }
-        break;
+    break;
 
     case AddFriendRequist:
     {
         ParseAddFriendRequest(dataVal);
     }
-        break;
+    break;
     case AddGroupRequist:
     {
         ParseAddGroupRequest(dataVal);
     }
-        break;
+    break;
 
     case CreateGroup:
     {
         ParseCreateGroupReply(dataVal);
     }
-        break;
+    break;
     case GetMyFriends:
     {
         ParseGetFriendsReply(dataVal);
     }
-        break;
+    break;
     case GetMyGroups:
     {
         ParseGetGroupFriendsReply(dataVal);
     }
-        break;
+    break;
     case RefreshFriends:
     {
         ParseRefreshFriendsReply(dataVal);
     }
-        break;
+    break;
     case RefreshGroups:
     {
         ParseRefreshGroupFriendsReply(dataVal);
     }
-        break;
+    break;
     case SendMsg:
     {
         ParseFriendMessageReply(dataVal);
     }
-        break;
+    break;
     case SendGroupMsg:
     {
         ParseGroupMessageReply(dataVal);
     }
-        break;
+    break;
     case SendFile:
     {
         ParseFriendMessageReply(dataVal);
     }
-        break;
+    break;
     case SendPicture:
     {
         ParseFriendMessageReply(dataVal);
     }
-        break;
+    break;
     default:
         break;
     }
@@ -1001,18 +1044,18 @@ void MainWindow::ParseRefreshGroupFriendsReply(const QJsonValue &dataVal)
         int nSize = array.size();
         for (int i = 0; i < nSize; ++i) {
             //???
-                       // QJsonObject jsonObj = array.at(i).toObject();
-                       // int nId = jsonObj.value("id").toInt();
-                       // int nStatus = jsonObj.value("status").toInt();
+            // QJsonObject jsonObj = array.at(i).toObject();
+            // int nId = jsonObj.value("id").toInt();
+            // int nStatus = jsonObj.value("status").toInt();
 
-                       // QList<QQCell *> friends = ui->groupListWidget->getCells();
-                       // foreach (QQCell *cell, friends.at(0)->childs) {
-                       //     if (cell->id == nId) {
-                       //         cell->SetSubtitle(QString("当前用户状态：%1 ").arg(OnLine == nStatus ? tr("在线") : tr("离线")));
-                       //     }
-                       // }
+            // QList<QQCell *> friends = ui->groupListWidget->getCells();
+            // foreach (QQCell *cell, friends.at(0)->childs) {
+            //     if (cell->id == nId) {
+            //         cell->SetSubtitle(QString("当前用户状态：%1 ").arg(OnLine == nStatus ? tr("在线") : tr("离线")));
+            //     }
+            // }
 
-                       // ui->groupListWidget->upload();
+            // ui->groupListWidget->upload();
         }
     }
 }
@@ -1166,13 +1209,13 @@ void MainWindow::SltTrayIcoClicked(QSystemTrayIcon::ActivationReason reason)
     case QSystemTrayIcon::Trigger:
     {
     }
-        break;
+    break;
     case QSystemTrayIcon::DoubleClick:
     {
         if (!this->isVisible())
             this->show();
     }
-        break;
+    break;
     default:
         break;
     }

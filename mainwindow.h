@@ -6,6 +6,7 @@
 #include "clientsocket.h"
 
 #include <QButtonGroup>
+#include <QGraphicsScene>
 #include <QSystemTrayIcon>
 
 namespace Ui {
@@ -41,6 +42,13 @@ private:
 
     // 主动退出操作时不进行断线匹配
     bool            m_bQuit;
+
+    //界面缩放
+    QGraphicsScene * scene;
+    QGraphicsView  * view;
+    QWidget *contentWidget;
+    QSize originalSize;      // 原始尺寸
+    QGraphicsProxyWidget *proxy;
 private slots:
     // 用户接受处理
     void SltReadMessages(const QJsonValue &json, const int &id);
@@ -115,6 +123,12 @@ private:
     // 头像图片的获取
     QString GetHeadPixmap(const QString &name) const;
     void DownloadFriendHead(const int &userId, const QString &strHead);
+
+    // QWidget interface
+protected:
+    virtual void resizeEvent(QResizeEvent *event) override;
 };
+
+
 
 #endif // MAINWINDOW_H

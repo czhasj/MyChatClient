@@ -5,6 +5,10 @@
 #include <QDialog>
 #include <QMutex>
 #include <QTimer>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QVBoxLayout>
+#include <QGraphicsWidget>
 
 #include <QLineEdit>
 
@@ -43,10 +47,101 @@ protected:
     QPoint mousePoint;
     bool m_mousePressed;
 
+    QGraphicsScene * scene;
+    QGraphicsView  * view;
+    QWidget *contentWidget;
+    QSize originalSize;      // 原始尺寸
+    QGraphicsProxyWidget *proxy;
+
     void mouseMoveEvent(QMouseEvent *e);
     void mousePressEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *);
+
+    // QWidget interface
+protected:
+    virtual void resizeEvent(QResizeEvent *event) override;
+    virtual void showEvent(QShowEvent *event) override;
+// public:
+//     explicit CustomMoveWidget(QWidget *parent = nullptr)
+//         : CustomWidget(parent),
+//         graphicsScene(new QGraphicsScene(this)),
+//         graphicsView(new QGraphicsView(graphicsScene, this)),
+//         graphicsWidget(new QGraphicsWidget()) {
+
+//         // 设置布局
+//         QVBoxLayout *layout = new QVBoxLayout(this);
+//         layout->addWidget(graphicsView);
+//         setLayout(layout);
+
+//         // 添加 QGraphicsWidget 到场景
+//         graphicsScene->addItem(graphicsWidget);
+
+//         // 设置初始参数
+//         isMoving = false;
+//         scaleFactor = 1.0;
+//         setMouseTracking(true);
+
+//         // 设置背景色
+//         graphicsWidget->setStyleSheet("background-color: lightblue;");
+//         graphicsWidget->setGeometry(0, 0, 200, 200);
+//     }
+
+// protected:
+//     void mousePressEvent(QMouseEvent *event) override {
+//         if (graphicsWidget->geometry().contains(event->pos())) {
+//             isMoving = true;
+//             lastMousePos = event->pos();
+//         }
+//     }
+
+//     void mouseMoveEvent(QMouseEvent *event) override {
+//         if (isMoving) {
+//             QPointF delta = event->pos() - lastMousePos;
+//             lastMousePos = event->pos();
+//             moveBy(delta.x(), delta.y());
+//         }
+//     }
+
+//     void mouseReleaseEvent(QMouseEvent *event) override {
+//         Q_UNUSED(event);
+//         isMoving = false;
+//     }
+
+//     void wheelEvent(QWheelEvent *event) override {
+//         // 缩放
+//         if (event->angleDelta().y() > 0) {
+//             scaleBy(1.1);  // 放大
+//         } else {
+//             scaleBy(0.9);  // 缩小
+//         }
+//     }
+
+// private:
+//     QGraphicsScene *graphicsScene;
+//     QGraphicsView *graphicsView;
+//     QGraphicsWidget *graphicsWidget;
+//     bool isMoving;
+//     QPointF lastMousePos;
+//     qreal scaleFactor;
+
+//     void moveBy(qreal dx, qreal dy) {
+//         // 移动 QGraphicsWidget
+//         QRectF rect = graphicsWidget->geometry();
+//         rect.translate(dx, dy);
+//         graphicsWidget->setGeometry(rect);
+//     }
+
+//     void scaleBy(qreal factor) {
+//         // 等比例缩放 QGraphicsWidget
+//         scaleFactor *= factor;
+
+//         QTransform transform;
+//         transform.scale(scaleFactor, scaleFactor);
+//         graphicsWidget->setTransform(transform);
+//     }
 };
+
+
 
 ///////////////////////////////////////////////////////////////////////
 /// \brief The CustomDialog class
